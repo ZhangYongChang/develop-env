@@ -1,0 +1,33 @@
+FROM centos:7.6.1810
+
+WORKDIR /build
+
+COPY tools/*.tar.xz /build/
+
+RUN set -ex \
+  && yum -y install zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gcc make wget vim git libXext libSM libXrender \
+  && yum clean all \
+  && mkdir /usr/local/python3 \
+  && tar -xvJf  Python-3.6.8.tar.xz \
+  && cd Python-3.6.8 && ./configure prefix=/usr/local/python3 && make && make install \
+  && ln -s /usr/local/python3/bin/python3.6 /usr/local/bin/python3 \
+  && ln -s /usr/local/python3/bin/pip3 /usr/local/bin/pip3 \
+  && cd .. && rm -rf Python-3.6.8 \
+  && tar xf wkhtmltox-0.12.4_linux-generic-amd64.tar.xz \
+  && mv wkhtmltox/bin/wkhtmltopdf /usr/bin/wkhtmltopdf \
+  && tar xf node-v12.11.1-linux-x64.tar.xz \
+  && mkdir /usr/local/tools \
+  && mv /build/node-v12.11.1-linux-x64 /usr/local/tools/node \
+  && ln -s /usr/local/tools/node/bin/npm   /usr/local/bin/ \
+  && ln -s /usr/local/tools/node/bin/node   /usr/local/bin/ \
+  && rm -rf *
+
+COPY requirements.txt /build
+RUN pip3 install -r /build/requirements.txt -i https://pypi.douban.com/simple
+
+COPY tools/*.ttc /usr/share/fonts/
+COPY tools/*.py /usr/local/python3/lib/python3.6/site-packages/django/db/backends/mysql/
+COPY tools/code-server-3.2.0-linux-x86_64.tar.gz /build/
+RUN tar zxvf code-server-3.2.0-linux-x86_64.tar.gz \
+  && mv /build/code-server-3.2.0-linux-x86_64 /usr/local/tools/code-server \
+  && ln -s /usr/local/tools/code-server/code-server /usr/local/bin/code-server

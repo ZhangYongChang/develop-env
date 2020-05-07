@@ -1,0 +1,8 @@
+django==2.2.5
+matplotlib==3.0.2
+fcsparser
+pymysql
+cryptography
+django-cors-headers
+jinja2
+pdfkit
